@@ -1,48 +1,40 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>α-Analyser V2.2 - Fig.16 Grize Compliant</title>
-<style>
-body{font-family:system-ui;max-width:800px;margin:20px auto;padding:16px;line-height:1.5}
-textarea{width:100%;height:140px;padding:12px;font-size:16px}
-button{background:#111;color:#fff;padding:12px 20px;border:0;border-radius:8px;font-size:16px;margin-top:12px;cursor:pointer}
-.card{border:1px solid #ddd;border-radius:12px;padding:12px;margin:10px 0}
-.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:12px;margin-right:6px}
-.th{background:#dbeafe}.ga{background:#dcfce7}.rh{background:#fef9c3}
-pre{white-space:pre-wrap;background:#f6f6f6;padding:12px;border-radius:8px;overflow:auto}
-</style>
+<html lang="fr">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>α-Analyser V3.2 — Fig.16 + Presets</title>
+<style>body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem}textarea{width:100%;min-height:160px;font-family:monospace;padding:0.8rem}button{background:#111;color:#fff;border:0;padding:0.7rem 1.2rem;border-radius:8px;cursor:pointer}select{padding:0.6rem;border-radius:6px;width:100%;margin-bottom:0.6rem}pre{background:#f5f5f5;padding:1rem;overflow:auto;border-radius:8px;white-space:pre-wrap}</style>
 </head>
 <body>
-<h2>α-Analyser V2.2 — Fig.16 Grize-Compliant</h2>
-<p>Fig.16: γ (faisceaux), ρ (domaines), θ (pure désignation θ0-θ5)</p>
-<textarea id="input">CRISPR-Cas9 is a revolutionary, programmable gene-editing technology derived from natural bacterial immune systems. It uses a Cas9 protein scissor and a single guide RNA (sgRNA) to locate and cleanly cut specific DNA strands, allowing scientists to add, remove, or alter genetic material.</textarea>
+<h1>α-Analyser V3.2 — Fig.16 Bilingue</h1>
+<select id="preset" onchange="loadPreset()">
+<option value="fig1">Fig.1 — Livre / Génome</option>
+<option value="fig2" selected>Fig.2 — Pile La Recherche 33m</option>
+<option value="crispr">EN — CRISPR</option>
+<option value="custom">Custom</option>
+</select>
+<textarea id="input"></textarea><br>
 <button onclick="analyse()">Analyse Fig.16</button>
-<div id="out"></div>
+<pre id="result"></pre>
 <script>
-const THETAS = [
-  {id:'θ0', name:'synonyme', def:'Introduit un synonyme - ex: question ↔ interrogation'},
-  {id:'θ1', name:'genre prochain', def:'Hyperonymie - ex: table ↔ meuble'},
-  {id:'θ2', name:'autre angle', def:'Métonymie - ex: Ministère ↔ Quai dOrsay'},
-  {id:'θ3', name:'jugement de valeur', def:'Qualification - ex: mon gosse, ce héros'},
-  {id:'θ4', name:'vidage', def:'Vide sémantique - ex: Mac ↔ machin'},
-  {id:'θ5', name:'cotyponyme commun', def:'Nom commun thème+phore - Cas9+scissor→cutting_instrument', poles:['Cas9','scissor'], abstraction:'cutting_instrument'}
-];
-function analyse(){
-  const text=document.getElementById('input').value;
-  const ops=[];
-  if(/is a.* technology/i.test(text)) ops.push({op:'θ1',family:'th',formal:'θ1(CRISPR-Cas9) → [CRISPR-Cas9, technology]',name:'θ1 genre prochain - hyperonymie',evidence:text.split('.')[0],enriched:['CRISPR-Cas9','technology'],reversible:true});
-  const vals=text.match(/revolutionary|programmable|cleanly/g)||[];
-  vals.forEach(m=>ops.push({op:'θ3',family:'th',formal:`θ3(object) → [object, ${m}]`,name:'θ3 jugement de valeur - qualification',evidence:m,enriched:[m],reversible:true}));
-  if(/Cas9.*scissor|scissor/i.test(text)) ops.push({op:'θ5',family:'th',formal:'θ5(Cas9, scissor) → [cutting_instrument]',name:'θ5 cotyponyme commun thème+phore',poles:['Cas9','scissor'],abstraction:'cutting_instrument',evidence:'Cas9 protein scissor',enriched:['Cas9','scissor','cutting_instrument'],reversible:true});
-  if(/Cas9 protein|sgRNA/i.test(text)) ops.push({op:'γ1',family:'y',formal:'γ1(CRISPR-Cas9) → [Cas9 protein, sgRNA]',name:'γ1 ingrédient - faisceau',evidence:'Cas9 protein and sgRNA',enriched:['Cas9 protein','sgRNA'],reversible:true});
-  if(/locate|cut/i.test(text)) ops.push({op:'γ2',family:'y',formal:'γ2(CRISPR) → [locate, cut]',name:'γ2 processus interne - faisceau',evidence:'locate and cleanly cut',enriched:['locate','cut'],reversible:true});
-  if(/bacterial immune/i.test(text)) ops.push({op:'ρ3',family:'p',formal:'ρ3(CRISPR) → [origin: bacterial immune systems]',name:'ρ3 domaine source',evidence:'derived from bacterial immune systems',enriched:['bacterial immune systems'],reversible:false});
-  if(/scissor/i.test(text)) ops.push({op:'ρ4',family:'p',formal:'ρ4(Cas9) → [phore analogique: scissor]',name:'ρ4 extension analogique - domaine',evidence:'Cas9 protein scissor',enriched:['Cas9','scissor - phore'],reversible:false});
-  const result={model:'Fig16 V2.2 Grize-Compliant',input:text,operations:ops,thetas_def:THETAS,final_class:[...new Set(ops.flatMap(o=>o.enriched))]};
-  document.getElementById('out').innerHTML=`<h3>Result - Grize Fig.16</h3><pre>${JSON.stringify(result,null,2)}</pre>`+ops.map(o=>`<div class=card><span class=badge ${o.family=='th'?'th':o.family=='y'?'ga':'rh'}>${o.op}</span><b>${o.name}</b><br><code>${o.formal}</code><br><small>${o.evidence}</small></div>`).join('');
+const CORPUS={
+fig1:`Si l'on compare le génome à un grand livre dont chaque page serait un gène, cela revient à dire que toutes les cellules d'un organisme, depuis l'oeuf jusqu'à l'adulte, disposent du même livre. C'est le mode de lecture du livre qui est strictement contrôlé, de sorte que quelques pages seulement sont lisibles dans chaque cellule.`,
+fig2:`Figure 2: Comparer, comme sur ce schéma, la succession des bases qui composent la séquence d'une molécule d'ADN avec la succession des lettres d'un texte permet de bien rendre compte des différences de taille du génome d'un organisme à l'autre, et de se faire une meilleure idée du travail que représente leur lecture. En moyenne, une page de La Recherche contient 5000 signes, et un numéro complet environ 500 000. Si un signe représente une base, alors le génome d'un être humain est comparable à une pile de numéros de La Recherche de 33 mètres de haut. Celui d'une souris ne ferait que 30 mètres et celui de la mouche drosophile, 1,70 mètre. Le génome de la bactérie B. Subtilis est comparable à huit numéros de La Recherche et celui du virus Phi X 174, le premier génome entièrement séquencé en 1977 à une page et quelques lignes. Aujourd'hui de nombreux progrès sont encore nécessaires pour que le séquençage exhaustif du génome de l'homme et son interprétation soient réalisables.`,
+crispr:`CRISPR-Cas9 is a revolutionary, programmable gene-editing technology derived from natural bacterial immune systems. It uses a Cas9 protein scissor and a single guide RNA (sgRNA) to locate and cleanly cut specific DNA strands, allowing scientists to add, remove, or alter genetic material.`
+};
+function normalize(s){return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();}
+function findOps(t){const ops=[],low=normalize(t),orig=t;
+if(/si l'on compare|comparer.* comme/i.test(low)) ops.push({op:"γ1",family:"γ",name:"γ1 ancrage analogique",evidence:"Comparer la succession des bases avec la succession des lettres / Si l'on compare le génome à un grand livre",enriched:["ADN","bases","lettres","texte","livre"]});
+if(/permet de.* rendre compte|permet de.* se faire/i.test(low)) ops.push({op:"ρ1",family:"ρ",name:"ρ1 finalité pédagogique",evidence:"permet de bien rendre compte des différences de taille et se faire une meilleure idée du travail"});
+if(/5000|500 000|signe represente une base|chaque page serait un gene/i.test(low)) ops.push({op:"θ1+θ4",family:"θ",name:"θ1/θ4 étalon",formal:"θ1(signe=base) → page=5000, numéro=500000",evidence:"5000 signes/page, 500000/numéro. Si un signe représente une base"});
+if(/33 metres|30 metres|1,70|huit numeros|une page/i.test(low)) ops.push({op:"θ2",family:"θ",name:"θ2 projection graduée",formal:"humain→33m, souris→30m, drosophile→1.70m, B.subtilis→8n°, PhiX174→1p",evidence:"33m humain, 30m souris, 1,70m drosophile, 8 numéros bactérie, 1 page virus",quantification:"échelle continue"});
+if(/toutes les cellules|depuis l'oeuf/i.test(low)) ops.push({op:"θ2",family:"θ",name:"θ2 tout/partie",evidence:"toutes les cellules depuis l'oeuf jusqu'à l'adulte - même livre"});
+if(/revolutionary|strictement controle|comparable/i.test(low)) ops.push({op:"θ3",family:"θ",name:"θ3 jugement valeur",evidence:t.match(/revolutionary|strictement contrôlé|comparable/i)?.[0]});
+if(/mode de lecture.* controle/i.test(low)) ops.push({op:"ρ2",family:"ρ",name:"ρ2 régulation",evidence:"mode de lecture strictement contrôlé"});
+if(/aujourd'hui.* progres.* necessaires|progres.* necessaires.* realisables/i.test(low)) ops.push({op:"γ3+ρ2",family:"γ/ρ",name:"γ3 restriction temporelle + borne",evidence:"Aujourd'hui progrès nécessaires pour séquençage exhaustif réalisable"});
+if(/seulement|quelques.* lisibles/i.test(low)) ops.push({op:"γ3",family:"γ",name:"γ3 restriction",evidence:"quelques pages seulement lisibles"});
+return ops.length?ops:[{op:"γ0",evidence:t.slice(0,120)}];
 }
-</script>
-</body>
-</html>
+function loadPreset(){const v=document.getElementById('preset').value;if(CORPUS[v])document.getElementById('input').value=CORPUS[v];analyse();}
+function analyse(){const t=document.getElementById('input').value;const ops=findOps(t);document.getElementById('result').textContent=JSON.stringify({model:"Fig16 V3.2",preset:document.getElementById('preset').value,input:t.slice(0,400),operations:ops},null,2);}
+window.onload=loadPreset;
+</script></body></html>
