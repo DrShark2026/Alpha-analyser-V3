@@ -1,4 +1,4 @@
-md# α-Analyser V2.2 — Fig.16 Grize-Compliant
+md# α-Analyser V3 
 🔍 Anti-hallucination | 🧠 Argumentation Logic | 📜 Grize1996 "Logique naturelle et communications"/Charconnet 2003 "Analogie et logique naturelle" Fig.16 | ⚡ θ5 Metaphor Detector
 
 **LLMs hallucinate because they confuse what an object IS (γ), where it BELONGS (ρ), and how it's NAMED (θ). This analyser catches it using 1990s logic that still beats transformers at argument dissection.**
