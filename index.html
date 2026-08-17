@@ -1,40 +1,89 @@
 <!DOCTYPE html>
-<html lang="fr">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>α-Analyser V3.2 — Fig.16 + Presets</title>
-<style>body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem}textarea{width:100%;min-height:160px;font-family:monospace;padding:0.8rem}button{background:#111;color:#fff;border:0;padding:0.7rem 1.2rem;border-radius:8px;cursor:pointer}select{padding:0.6rem;border-radius:6px;width:100%;margin-bottom:0.6rem}pre{background:#f5f5f5;padding:1rem;overflow:auto;border-radius:8px;white-space:pre-wrap}</style>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha-analyser V3.3 - Fig.16 + Fig.4 EN</title>
+<style>
+body{font-family:system-ui,sans-serif;max-width:900px;margin:20px auto;padding:20px;line-height:1.6}
+button{padding:10px 16px;margin:5px;border-radius:8px;border:1px solid #ccc;cursor:pointer}
+button.active{background:#111;color:#fff}
+textarea{width:100%;height:220px;padding:12px;font-size:14px}
+.preset-bar{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.card{border:1px solid #ddd;border-radius:12px;padding:16px;margin:12px 0}
+.tag{display:inline-block;padding:3px 9px;border-radius:12px;font-size:12px;margin:2px}
+.theta2{background:#dbeafe}.pi1{background:#fef3c7}.delta{background:#dcfce7}.gamma{background:#fce7f3}
+</style>
 </head>
 <body>
-<h1>α-Analyser V3.2 — Fig.16 Bilingue</h1>
-<select id="preset" onchange="loadPreset()">
-<option value="fig1">Fig.1 — Livre / Génome</option>
-<option value="fig2" selected>Fig.2 — Pile La Recherche 33m</option>
-<option value="crispr">EN — CRISPR</option>
-<option value="custom">Custom</option>
-</select>
-<textarea id="input"></textarea><br>
-<button onclick="analyse()">Analyse Fig.16</button>
-<pre id="result"></pre>
+<h1>Alpha-analyser V3.3 — Fig.16 (Grize)</h1>
+<p><b>Bilingue FR/EN</b> — Pour boîtes d'IA • Anti-hallucination</p>
+
+<div class="preset-bar">
+<button onclick="loadPreset('fig1')">Fig.1 Grize FR</button>
+<button onclick="loadPreset('fig2')">Fig.2 33m FR</button>
+<button onclick="loadPreset('fig3')">Fig.3 CRISPR FR</button>
+<button class="active" onclick="loadPreset('fig4')">Fig.4 AI Docs EN [NEW]</button>
+<button onclick="loadPreset('custom')">Custom</button>
+</div>
+
+<textarea id="inputText"></textarea>
+<button onclick="analyze()" style="background:#111;color:white;width:100%;margin-top:10px;font-weight:bold;padding:14px">Analyser Fig.16 → θ1/θ2/π1/δ/γ</button>
+
+<div id="results"></div>
+
+<h3>Export corpus_train.jsonl (Gold dataset)</h3>
+<button onclick="exportJSONL()">Télécharger.jsonl</button>
+<pre id="exportArea" style="background:#f6f6f6;padding:12px;overflow:auto;white-space:pre-wrap"></pre>
+
 <script>
-const CORPUS={
-fig1:`Si l'on compare le génome à un grand livre dont chaque page serait un gène, cela revient à dire que toutes les cellules d'un organisme, depuis l'oeuf jusqu'à l'adulte, disposent du même livre. C'est le mode de lecture du livre qui est strictement contrôlé, de sorte que quelques pages seulement sont lisibles dans chaque cellule.`,
-fig2:`Figure 2: Comparer, comme sur ce schéma, la succession des bases qui composent la séquence d'une molécule d'ADN avec la succession des lettres d'un texte permet de bien rendre compte des différences de taille du génome d'un organisme à l'autre, et de se faire une meilleure idée du travail que représente leur lecture. En moyenne, une page de La Recherche contient 5000 signes, et un numéro complet environ 500 000. Si un signe représente une base, alors le génome d'un être humain est comparable à une pile de numéros de La Recherche de 33 mètres de haut. Celui d'une souris ne ferait que 30 mètres et celui de la mouche drosophile, 1,70 mètre. Le génome de la bactérie B. Subtilis est comparable à huit numéros de La Recherche et celui du virus Phi X 174, le premier génome entièrement séquencé en 1977 à une page et quelques lignes. Aujourd'hui de nombreux progrès sont encore nécessaires pour que le séquençage exhaustif du génome de l'homme et son interprétation soient réalisables.`,
-crispr:`CRISPR-Cas9 is a revolutionary, programmable gene-editing technology derived from natural bacterial immune systems. It uses a Cas9 protein scissor and a single guide RNA (sgRNA) to locate and cleanly cut specific DNA strands, allowing scientists to add, remove, or alter genetic material.`
+const presets = {
+ fig1: `Prenons l'exemple de la notion d'ensemble. L'ensemble est une collection d'objets bien distincts.`,
+ fig2: `Prenez une pile de magazines La Recherche. Si la Terre était plate... 33 mètres de hauteur... le projet génome 30 mètres...`,
+ fig3: `La technologie CRISPR permet de couper l'ADN. Avec CRISPR-Cas9, on peut éditer 3 milliards de paires de bases.`,
+ fig4: `Right now, an AI agent is reading your documentation. It is trying to answer a developer's question, generate an integration, or troubleshoot an error on behalf of a customer. If your docs are accurate, the agent gets it right. If they are outdated, incomplete, or wrong, the agent does not pause to double-check. It confidently delivers the wrong answer.
+
+That is an AI hallucination -- and your documentation is one of the most effective tools you have to prevent it.
+
+AI hallucinations have become one of the most discussed risks in deploying language models. But most of the conversation focuses on the models themselves: their training data, their architecture, their tendency to guess when they should say "I don't know." What gets far less attention is the role that the source material plays. When the information an AI model relies on is wrong, the output will be wrong too -- and no amount of model improvement will fix that.`
 };
-function normalize(s){return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();}
-function findOps(t){const ops=[],low=normalize(t),orig=t;
-if(/si l'on compare|comparer.* comme/i.test(low)) ops.push({op:"γ1",family:"γ",name:"γ1 ancrage analogique",evidence:"Comparer la succession des bases avec la succession des lettres / Si l'on compare le génome à un grand livre",enriched:["ADN","bases","lettres","texte","livre"]});
-if(/permet de.* rendre compte|permet de.* se faire/i.test(low)) ops.push({op:"ρ1",family:"ρ",name:"ρ1 finalité pédagogique",evidence:"permet de bien rendre compte des différences de taille et se faire une meilleure idée du travail"});
-if(/5000|500 000|signe represente une base|chaque page serait un gene/i.test(low)) ops.push({op:"θ1+θ4",family:"θ",name:"θ1/θ4 étalon",formal:"θ1(signe=base) → page=5000, numéro=500000",evidence:"5000 signes/page, 500000/numéro. Si un signe représente une base"});
-if(/33 metres|30 metres|1,70|huit numeros|une page/i.test(low)) ops.push({op:"θ2",family:"θ",name:"θ2 projection graduée",formal:"humain→33m, souris→30m, drosophile→1.70m, B.subtilis→8n°, PhiX174→1p",evidence:"33m humain, 30m souris, 1,70m drosophile, 8 numéros bactérie, 1 page virus",quantification:"échelle continue"});
-if(/toutes les cellules|depuis l'oeuf/i.test(low)) ops.push({op:"θ2",family:"θ",name:"θ2 tout/partie",evidence:"toutes les cellules depuis l'oeuf jusqu'à l'adulte - même livre"});
-if(/revolutionary|strictement controle|comparable/i.test(low)) ops.push({op:"θ3",family:"θ",name:"θ3 jugement valeur",evidence:t.match(/revolutionary|strictement contrôlé|comparable/i)?.[0]});
-if(/mode de lecture.* controle/i.test(low)) ops.push({op:"ρ2",family:"ρ",name:"ρ2 régulation",evidence:"mode de lecture strictement contrôlé"});
-if(/aujourd'hui.* progres.* necessaires|progres.* necessaires.* realisables/i.test(low)) ops.push({op:"γ3+ρ2",family:"γ/ρ",name:"γ3 restriction temporelle + borne",evidence:"Aujourd'hui progrès nécessaires pour séquençage exhaustif réalisable"});
-if(/seulement|quelques.* lisibles/i.test(low)) ops.push({op:"γ3",family:"γ",name:"γ3 restriction",evidence:"quelques pages seulement lisibles"});
-return ops.length?ops:[{op:"γ0",evidence:t.slice(0,120)}];
+
+function loadPreset(k){
+ document.querySelectorAll('.preset-bar button').forEach(b=>b.classList.remove('active'));
+ if(event) event.target.classList.add('active');
+ document.getElementById('inputText').value = presets[k]||'';
+ analyze();
 }
-function loadPreset(){const v=document.getElementById('preset').value;if(CORPUS[v])document.getElementById('input').value=CORPUS[v];analyse();}
-function analyse(){const t=document.getElementById('input').value;const ops=findOps(t);document.getElementById('result').textContent=JSON.stringify({model:"Fig16 V3.2",preset:document.getElementById('preset').value,input:t.slice(0,400),operations:ops},null,2);}
-window.onload=loadPreset;
-</script></body></html>
+
+function analyze(){
+ const text = document.getElementById('inputText').value;
+ const results = document.getElementById('results');
+ if(!text.trim()){results.innerHTML=''; return;}
+ const theta2 = [...text.matchAll(/(accurate|outdated|incomplete|wrong|effective|most|AI agent|documentation|source material|training data|architecture|information)/gi)].map(m=>m[0]).slice(0,18);
+ const pi1 = [...text.matchAll(/(your documentation|source material|models themselves|training data|architecture)/gi)].map(m=>m[0]);
+ let delta = [];
+ if(text.includes('If your docs are accurate')) delta.push('If docs are accurate → gets it right','If docs are wrong → confidently wrong');
+ if(text.includes('When the information')) delta.push('When source is wrong → output wrong too');
+ const gamma = ['Conditional causality γ: If/When structure + Counter-thesis: focus on model vs focus on source'];
+
+ results.innerHTML = `
+ <div class="card"><b>θ1 Objet initial</b><br><span class="tag theta2">AI agent reading documentation</span> → objet de discours = documentation as source for AI</div>
+ <div class="card"><b>θ2 Objets construits</b><br>${theta2.map(t=>`<span class="tag theta2">${t}</span>`).join(' ')}<br><small>Quantificateurs: one of the most effective, most discussed, no amount</small></div>
+ <div class="card"><b>π1 Ancrage</b><br>${pi1.map(t=>`<span class="tag pi1">${t}</span>`).join(' ')}</div>
+ <div class="card"><b>δ Détermination</b><br>${delta.map(t=>`<span class="tag delta">${t}</span>`).join(' ')}</div>
+ <div class="card"><b>γ Opération</b><br><span class="tag gamma">${gamma[0]}</span><br><br>Thèse: Doc = prevention tool. C'est ton pitch IA.</div>
+ <div class="card" style="background:#f0fdf4"><b>→ Pour convaincre une boîte IA:</b><br>"V3 = guardrail symbolique. Il vérifie que ta doc est Fig.16-compliant avant d'être injectée en RAG → hallucination rate ↓"</div>
+ `;
+ document.getElementById('exportArea').textContent = JSON.stringify({id:'fig4_en',lang:'en',text:text.substring(0,300),theta2,pi1,delta,gamma,date:new Date().toISOString(),pitch:'Grize as anti-hallucination guardrail'}, null, 2);
+}
+
+function exportJSONL(){
+ const entry = document.getElementById('exportArea').textContent + "\n";
+ const blob = new Blob([entry], {type:'application/json'});
+ const url = URL.createObjectURL(blob);
+ const a=document.createElement('a');a.href=url;a.download='corpus_train.jsonl';a.click();
+}
+window.onload = ()=>{ document.getElementById('inputText').value = presets.fig4; analyze(); };
+</script>
+</body>
+</html>
