@@ -1,0 +1,4 @@
+{"id":"fig1_grize_fr","lang":"fr","text":"Prenons l'exemple de la notion d'ensemble..."}
+{"id":"fig2_33m_fr","lang":"fr","text":"33m La Recherche, 30m genome, 1.70m, 8 numeros","theta2":["33m","30m","1.70m"],"operation":"quantification spatiale"}
+{"id":"fig3_crispr_fr","lang":"fr","text":"CRISPR 3 milliards paires"}
+{"id":"fig4_docs_en","lang":"en","text":"Right now, an AI agent is reading your documentation. If your docs are accurate, the agent gets it right...","theta2":["accurate docs","outdated/incomplete/wrong docs","most effective tools","most discussed risks","no amount of model improvement"],"pi1":"documentation as source material","delta":["If docs accurate → right","If docs wrong → wrong answer"],"gamma":"Conditional causality + counter-argumentation","pitch":"Grize Fig.16 as guardrail for RAG"}
