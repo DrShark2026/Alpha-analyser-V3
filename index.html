@@ -1,91 +1,40 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>α-Analyser V3.1 — Fig.16 Grize-Compliant Bilingue</title>
-<style>
-body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;line-height:1.5}
-textarea{width:100%;min-height:140px;font-family:monospace;padding:0.8rem;font-size:14px}
-button{background:#111;color:#fff;border:0;padding:0.7rem 1.2rem;border-radius:8px;cursor:pointer;font-size:15px;margin-top:0.6rem}
-pre{background:#f5f5f5;padding:1rem;overflow:auto;border-radius:8px;white-space:pre-wrap;word-break:break-word}
-small{color:#666}
-h1{font-size:1.4rem}
-</style>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>α-Analyser V3.2 — Fig.16 + Presets</title>
+<style>body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem}textarea{width:100%;min-height:160px;font-family:monospace;padding:0.8rem}button{background:#111;color:#fff;border:0;padding:0.7rem 1.2rem;border-radius:8px;cursor:pointer}select{padding:0.6rem;border-radius:6px;width:100%;margin-bottom:0.6rem}pre{background:#f5f5f5;padding:1rem;overflow:auto;border-radius:8px;white-space:pre-wrap}</style>
 </head>
 <body>
-<h1>α-Analyser V3.1 — Fig.16 Grize-Compliant (FR/EN)</h1>
-<p><small>Fig.16: γ (faisceaux), ρ (domaines), θ (pure désignation θ0-θ5) — Unicode / Bilingue</small></p>
-
-<textarea id="input">Si l'on compare le génome à un grand livre dont chaque page serait un gène, cela revient à dire que toutes les cellules d'un organisme, depuis l'oeuf jusqu'à l'adulte, disposent du même livre. C'est le mode de lecture du livre qui est strictement contrôlé, de sorte que quelques pages seulement sont lisibles dans chaque cellule.</textarea>
+<h1>α-Analyser V3.2 — Fig.16 Bilingue</h1>
+<select id="preset" onchange="loadPreset()">
+<option value="fig1">Fig.1 — Livre / Génome</option>
+<option value="fig2" selected>Fig.2 — Pile La Recherche 33m</option>
+<option value="crispr">EN — CRISPR</option>
+<option value="custom">Custom</option>
+</select>
+<textarea id="input"></textarea><br>
 <button onclick="analyse()">Analyse Fig.16</button>
-
-<h3>Result - Grize Fig.16</h3>
-<pre id="result">{}</pre>
-
+<pre id="result"></pre>
 <script>
-const THETAS_DEF=[
- {id:"θ0",name:"synonyme",def:"synonyme - ex: question ↔ interrogation"},
- {id:"θ1",name:"genre prochain",def:"Hyperonymie - ex: table → meuble / page → gène"},
- {id:"θ2",name:"autre angle / tout-partie",def:"Métonymie / composition - livre → pages / organisme → cellules"},
- {id:"θ3",name:"jugement de valeur",def:"Qualification - mon gosse, ce héros / revolutionary, strictly"},
- {id:"θ4",name:"détermination",def:"Restriction référentielle - ce livre, chaque cellule"},
- {id:"θ5",name:"manifestation",def:"Modalité - lisibles, contrôlé"}
-];
-
-function normalize(s){
-  return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const CORPUS={
+fig1:`Si l'on compare le génome à un grand livre dont chaque page serait un gène, cela revient à dire que toutes les cellules d'un organisme, depuis l'oeuf jusqu'à l'adulte, disposent du même livre. C'est le mode de lecture du livre qui est strictement contrôlé, de sorte que quelques pages seulement sont lisibles dans chaque cellule.`,
+fig2:`Figure 2: Comparer, comme sur ce schéma, la succession des bases qui composent la séquence d'une molécule d'ADN avec la succession des lettres d'un texte permet de bien rendre compte des différences de taille du génome d'un organisme à l'autre, et de se faire une meilleure idée du travail que représente leur lecture. En moyenne, une page de La Recherche contient 5000 signes, et un numéro complet environ 500 000. Si un signe représente une base, alors le génome d'un être humain est comparable à une pile de numéros de La Recherche de 33 mètres de haut. Celui d'une souris ne ferait que 30 mètres et celui de la mouche drosophile, 1,70 mètre. Le génome de la bactérie B. Subtilis est comparable à huit numéros de La Recherche et celui du virus Phi X 174, le premier génome entièrement séquencé en 1977 à une page et quelques lignes. Aujourd'hui de nombreux progrès sont encore nécessaires pour que le séquençage exhaustif du génome de l'homme et son interprétation soient réalisables.`,
+crispr:`CRISPR-Cas9 is a revolutionary, programmable gene-editing technology derived from natural bacterial immune systems. It uses a Cas9 protein scissor and a single guide RNA (sgRNA) to locate and cleanly cut specific DNA strands, allowing scientists to add, remove, or alter genetic material.`
+};
+function normalize(s){return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();}
+function findOps(t){const ops=[],low=normalize(t),orig=t;
+if(/si l'on compare|comparer.* comme/i.test(low)) ops.push({op:"γ1",family:"γ",name:"γ1 ancrage analogique",evidence:"Comparer la succession des bases avec la succession des lettres / Si l'on compare le génome à un grand livre",enriched:["ADN","bases","lettres","texte","livre"]});
+if(/permet de.* rendre compte|permet de.* se faire/i.test(low)) ops.push({op:"ρ1",family:"ρ",name:"ρ1 finalité pédagogique",evidence:"permet de bien rendre compte des différences de taille et se faire une meilleure idée du travail"});
+if(/5000|500 000|signe represente une base|chaque page serait un gene/i.test(low)) ops.push({op:"θ1+θ4",family:"θ",name:"θ1/θ4 étalon",formal:"θ1(signe=base) → page=5000, numéro=500000",evidence:"5000 signes/page, 500000/numéro. Si un signe représente une base"});
+if(/33 metres|30 metres|1,70|huit numeros|une page/i.test(low)) ops.push({op:"θ2",family:"θ",name:"θ2 projection graduée",formal:"humain→33m, souris→30m, drosophile→1.70m, B.subtilis→8n°, PhiX174→1p",evidence:"33m humain, 30m souris, 1,70m drosophile, 8 numéros bactérie, 1 page virus",quantification:"échelle continue"});
+if(/toutes les cellules|depuis l'oeuf/i.test(low)) ops.push({op:"θ2",family:"θ",name:"θ2 tout/partie",evidence:"toutes les cellules depuis l'oeuf jusqu'à l'adulte - même livre"});
+if(/revolutionary|strictement controle|comparable/i.test(low)) ops.push({op:"θ3",family:"θ",name:"θ3 jugement valeur",evidence:t.match(/revolutionary|strictement contrôlé|comparable/i)?.[0]});
+if(/mode de lecture.* controle/i.test(low)) ops.push({op:"ρ2",family:"ρ",name:"ρ2 régulation",evidence:"mode de lecture strictement contrôlé"});
+if(/aujourd'hui.* progres.* necessaires|progres.* necessaires.* realisables/i.test(low)) ops.push({op:"γ3+ρ2",family:"γ/ρ",name:"γ3 restriction temporelle + borne",evidence:"Aujourd'hui progrès nécessaires pour séquençage exhaustif réalisable"});
+if(/seulement|quelques.* lisibles/i.test(low)) ops.push({op:"γ3",family:"γ",name:"γ3 restriction",evidence:"quelques pages seulement lisibles"});
+return ops.length?ops:[{op:"γ0",evidence:t.slice(0,120)}];
 }
-
-function findOps(text){
-  const ops=[];
-  const low = normalize(text);
-  const orig = text;
-
-  if(/(si l'?on compare|compare.* a |comme un|consider.* as|like a|analogy)/i.test(low)){
-    ops.push({op:"γ1",family:"γ",formal:"γ1(genome → livre)",name:"γ1 ancrage analogique",evidence:orig.match(/Si l'on compare[^.]+/i)?.[0]||orig.slice(0,80),enriched:["genome","livre","book"],reversible:true});
-  }
-  if(/(seulement|quelques|de sorte que|only|few|so that)/i.test(low)){
-    ops.push({op:"γ3",family:"γ",formal:"γ3(restriction)",name:"γ3 restriction / focalisation",evidence:"quelques pages seulement sont lisibles",enriched:["quelques","seulement","lisibles"]});
-  }
-  if(/(chaque page serait un gene|page.* serait.* gene|each page.* would be)/i.test(low)){
-    ops.push({op:"θ1",family:"θ",formal:"θ1(page → [page, gène])",name:"θ1 genre prochain",evidence:"chaque page serait un gène",enriched:["page","gène"],reversible:false});
-  }
-  if(/(crispr.* technology|programmable gene)/i.test(low)){
-    ops.push({op:"θ1",family:"θ",formal:"θ1(CRISPR → technology)",name:"θ1 hyperonymie",evidence:"CRISPR is a technology",enriched:["CRISPR","technology"]});
-  }
-  if(/(toutes les cellules|depuis l'oeuf|all cells|from egg to adult)/i.test(low)){
-    ops.push({op:"θ2",family:"θ",formal:"θ2(organisme → cellules)",name:"θ2 tout/partie + quantification",evidence:"toutes les cellules... depuis l'oeuf jusqu'à l'adulte",enriched:["cellules","organisme","oeuf","adulte"],quantification:"universel"});
-  }
-  if(/(revolutionary|strictement controle|strictly controlled)/i.test(low)){
-    ops.push({op:"θ3",family:"θ",formal:"θ3(valeur)",name:"θ3 jugement de valeur",evidence:orig.match(/revolutionary|strictement contrôlé|strictly/i)?.[0],enriched:["revolutionary","contrôlé"]});
-  }
-  if(/(mode de lecture.* controle|reading.* controlled)/i.test(low)){
-    ops.push({op:"ρ2",family:"ρ",formal:"ρ2(lecture = contrôlé)",name:"ρ2 domaine régulation",evidence:"mode de lecture... strictement contrôlé",enriched:["mode de lecture","contrôlé"],modalite:"déontique"});
-  }
-  if(/(chaque cellule|quelques pages|meme livre|same book)/i.test(low)){
-    ops.push({op:"θ4",family:"θ",formal:"θ4(détermination)",name:"θ4 détermination",evidence:"quelques pages... dans chaque cellule",enriched:["chaque","quelques","même"]});
-  }
-  if(ops.length===0){
-    ops.push({op:"γ0",family:"γ",formal:"γ0(fallback)",name:"γ0 faisceau non typé",evidence:orig.slice(0,120)});
-  }
-  return ops;
-}
-
-function analyse(){
-  const text=document.getElementById('input').value.trim();
-  const ops=findOps(text);
-  const out={
-    model:"Fig16 V3.1 Bilingue FR/EN",
-    lang: /[àâéèêôùûçœ]/i.test(text)? "fr" : "en",
-    input:text,
-    operations:ops,
-    thetas_def:THETAS_DEF,
-    diagnostic: ops.length>1? "Analogie maîtrisée - pas d'hallucination" : "Pas de pattern saillant"
-  };
-  document.getElementById('result').textContent=JSON.stringify(out,null,2);
-}
-window.onload=analyse;
-</script>
-</body>
-</html>
+function loadPreset(){const v=document.getElementById('preset').value;if(CORPUS[v])document.getElementById('input').value=CORPUS[v];analyse();}
+function analyse(){const t=document.getElementById('input').value;const ops=findOps(t);document.getElementById('result').textContent=JSON.stringify({model:"Fig16 V3.2",preset:document.getElementById('preset').value,input:t.slice(0,400),operations:ops},null,2);}
+window.onload=loadPreset;
+</script></body></html>
