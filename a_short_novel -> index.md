@@ -1,3 +1,9 @@
+---
+title: Une thèse qui a survécu au sable et aux séismes
+---
+
+# Histoire d'une thèse qui a survécu au sable et aux séismes
+...
 # Histoire d'une thèse qui a survécu au sable et aux séismes
 
 ## FR
