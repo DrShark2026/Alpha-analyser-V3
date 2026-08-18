@@ -1,4 +1,5 @@
----
+---<img width="1376" height="1824" alt="image" src="https://github.com/user-attachments/assets/f9b1adb4-0bd8-4be4-955f-f15c8e072b05" />
+
 title: Une thèse qui a survécu au sable et aux séismes
 ---
 
