@@ -1,4 +1,22 @@
----<img width="1376" height="1824" alt="image" src="https://github.com/user-attachments/assets/f9b1adb4-0bd8-4be4-955f-f15c8e072b05" />
+# Le Survivant - Une histoire vraie
+
+![Couverture originale - Le survivant, de l'auteur - Edition Sahara](./couverture-v3.3.jpg)
+
+> *Ce livre a traversé le Sahara à dos de chameau, un séisme, des ouragans. Il revient aujourd'hui comme témoignage.*
+
+### Préface - J.B. Grize
+> [Colle ici le texte de la préface de Grize - ou upload le JPG de la préface et je te l'OCR]
+
+### Dédicace
+À ceux qui ont gardé ce manuscrit vivant.
+
+---
+[ICI TON HISTOIRE ACTUELLE - laisse-la telle quelle, je l'embellirai avec titres H2 / H3]
+---
+
+### Épilogue
+Lien vers le projet technique qui en est né:
+👉 [Alpha Analyser V3 - retour à l'analyse](./index.md)---<img width="1376" height="1824" alt="image" src="https://github.com/user-attachments/assets/f9b1adb4-0bd8-4be4-955f-f15c8e072b05" />
 
 title: Une thèse qui a survécu au sable et aux séismes
 ---
